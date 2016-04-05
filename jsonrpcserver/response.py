@@ -71,6 +71,8 @@ class RequestResponse(_Response):
 
     #: The recommended HTTP status code.
     http_status = status.HTTP_OK
+    #: Dictionary of kwargs to pass to ``json.dumps``
+    encoder_options = {}
 
     def __init__(self, request_id, result):
         """
@@ -91,7 +93,7 @@ class RequestResponse(_Response):
 
     def __str__(self):
         """JSON-RPC response string."""
-        return json.dumps(_sort_response(self))
+        return json.dumps(_sort_response(self), **self.encoder_options)
 
 
 class ErrorResponse(_Response):
