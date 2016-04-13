@@ -176,8 +176,8 @@ class Request(object):
         # Get arguments from the request, if any
         self.args, self.kwargs = _get_arguments(request)
         # Normalize, if the user has supplied such a function
-        if self.arg_norm_function:
-            self.args, self.kwargs = self.arg_norm_function(self.args, self.kwargs)
+        if Request.arg_norm_function:
+            self.args, self.kwargs = Request.arg_norm_function(self.args, self.kwargs)
         # Get request id, if any
         self.request_id = request.get('id')
         # Convert camelCase to underscore
