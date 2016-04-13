@@ -158,7 +158,7 @@ class Request(object):
     #: converting messy camelCase methods and param names. I always enable this.
     convert_camel_case = False
 
-    #: Function with signature args, kwargs = function(args, kwargs) that normalises
+    #: Function with signature args, kwargs = function(request, args, kwargs) that normalises
     #: the argument list in an application-specific way. Useful for munging datatypes
     #: etc for situations where you can't change the exported function signature
     arg_norm_function = None
@@ -176,8 +176,8 @@ class Request(object):
         # Get arguments from the request, if any
         self.args, self.kwargs = _get_arguments(request)
         # Normalize, if the user has supplied such a function
-        if Request.arg_norm_function:
-            self.args, self.kwargs = Request.arg_norm_function(self.args, self.kwargs)
+        if self.arg_norm_function:
+            self.args, self.kwargs = self.arg_norm_function(self.args, self.kwargs)
         # Get request id, if any
         self.request_id = request.get('id')
         # Convert camelCase to underscore
