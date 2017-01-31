@@ -4,126 +4,127 @@
 from unittest import TestCase, main
 from functools import partial
 
-from jsonrpcserver.methods import Methods, _get_method
-from jsonrpcserver.exceptions import MethodNotFound
+from jsonrpcserver.methods import Methods
 
 
-class TestGetMethod(TestCase):
-
-    def test_list(self):
-        def cat(): pass # pylint: disable=multiple-statements
-        def dog(): pass # pylint: disable=multiple-statements
-        self.assertIs(cat, _get_method([cat, dog], 'cat'))
-        self.assertIs(dog, _get_method([cat, dog], 'dog'))
-
-    def test_list_non_existant(self):
-        def cat(): pass # pylint: disable=multiple-statements
-        with self.assertRaises(MethodNotFound):
-            _get_method([cat], 'cat_says')
+class TestInit(TestCase):
 
     def test_dict(self):
-        def cat(): pass # pylint: disable=multiple-statements
-        def dog(): pass # pylint: disable=multiple-statements
-        d = {'cat_says': cat, 'dog_says': dog}
-        self.assertIs(cat, _get_method(d, 'cat_says'))
-        self.assertIs(dog, _get_method(d, 'dog_says'))
+        methods = Methods({'ping': lambda: 'pong'})
+        self.assertIn('ping', methods)
 
-    def test_dict_non_existant(self):
-        def cat(): pass # pylint: disable=multiple-statements
-        with self.assertRaises(MethodNotFound):
-            _get_method({'cat_says': cat}, 'cat')
+    def test_named_args(self):
+        methods = Methods(ping=lambda: 'pong')
+        self.assertIn('ping', methods)
 
-    def test_methods_object(self):
-        def cat(): pass # pylint: disable=multiple-statements
-        def dog(): pass # pylint: disable=multiple-statements
-        methods = Methods()
-        methods.add_method(cat)
-        methods.add_method(dog)
-        self.assertIs(cat, _get_method(methods, 'cat'))
-        self.assertIs(dog, _get_method(methods, 'dog'))
+
+class TestMutableMapping(TestCase):
+
+    @staticmethod
+    def test_iter():
+        methods = Methods(ping=lambda: 'pong')
+        iter(methods)
+
+    def test_len(self):
+        methods = Methods(ping=lambda: 'pong')
+        self.assertEqual(1, len(methods))
+
+    @staticmethod
+    def test_del():
+        methods = Methods(ping=lambda: 'pong')
+        del methods['ping']
 
 
 class TestAdd(TestCase):
 
-    def test_function(self):
-        def go(): pass # pylint: disable=multiple-statements
+    def test_non_callable(self):
         methods = Methods()
-        methods.add_method(go)
-        self.assertIs(go, _get_method(methods, 'go'))
+        with self.assertRaises(TypeError):
+            methods.add(None, 'ping')
+
+    def test_no_name(self):
+        methods = Methods()
+        with self.assertRaises(AttributeError):
+            methods.add(None)
+
+    def test_function(self):
+        def foo(): pass #pylint:disable=multiple-statements
+        methods = Methods()
+        methods.add(foo)
+        self.assertIs(foo, methods['foo'])
 
     def test_function_custom_name(self):
-        def go(): pass # pylint:disable=multiple-statements
+        def foo(): pass #pylint:disable=multiple-statements
         methods = Methods()
-        methods.add_method(go, 'go_now')
-        self.assertIs(go, _get_method(methods, 'go_now'))
+        methods.add(foo, 'foobar')
+        self.assertIs(foo, methods['foobar'])
 
     def test_lambda_no_name(self):
         add = lambda x, y: x + y
         methods = Methods()
-        methods.add_method(add) # Lambda's __name__ will be '<lambda>'!
-        with self.assertRaises(MethodNotFound):
-            _get_method(methods, 'add')
+        methods.add(add) # Lambda's __name__ will be '<lambda>'!
+        self.assertNotIn('add', methods)
 
     def test_lambda_renamed(self):
         add = lambda x, y: x + y
         add.__name__ = 'add'
         methods = Methods()
-        methods.add_method(add)
-        self.assertIs(add, _get_method(methods, 'add'))
+        methods.add(add)
+        self.assertIs(add, methods['add'])
 
     def test_lambda_custom_name(self):
         add = lambda x, y: x + y
         methods = Methods()
-        methods.add_method(add, 'add')
-        self.assertIs(add, _get_method(methods, 'add'))
+        methods.add(add, 'add')
+        self.assertIs(add, methods['add'])
 
     def test_partial_no_name(self):
         six = partial(lambda x: x + 1, 5)
         methods = Methods()
         with self.assertRaises(AttributeError):
-            methods.add_method(six) # Partial has no __name__ !
+            methods.add(six) # Partial has no __name__ !
 
     def test_partial_renamed(self):
         six = partial(lambda x: x + 1, 5)
         six.__name__ = 'six'
         methods = Methods()
-        methods.add_method(six)
-        self.assertIs(six, _get_method(methods, 'six'))
+        methods.add(six)
+        self.assertIs(six, methods['six'])
 
     def test_partial_custom_name(self):
         six = partial(lambda x: x + 1, 5)
         methods = Methods()
-        methods.add_method(six, 'six')
-        self.assertIs(six, _get_method(methods, 'six'))
+        methods.add(six, 'six')
+        self.assertIs(six, methods['six'])
 
     def test_static_method(self):
-        class FooClass(object):
+        class FooClass(object): #pylint:disable=too-few-public-methods
             @staticmethod
-            def Foo():
+            def foo():
                 return 'bar'
         methods = Methods()
-        methods.add_method(FooClass.Foo)
-        self.assertIs(FooClass.Foo, _get_method(methods, 'Foo'))
+        methods.add(FooClass.foo)
+        self.assertIs(FooClass.foo, methods['foo'])
 
     def test_static_method_custom_name(self):
-        class FooClass(object):
+        class FooClass(object): #pylint:disable=too-few-public-methods
             @staticmethod
-            def Foo():
+            def foo():
                 return 'bar'
         methods = Methods()
-        methods.add_method(FooClass.Foo, 'custom')
-        self.assertIs(FooClass.Foo, _get_method(methods, 'custom'))
+        methods.add(FooClass.foo, 'custom')
+        self.assertIs(FooClass.foo, methods['custom'])
 
     def test_instance_method(self):
-        class FooClass(object):
-            def Foo(self): # pylint: disable=no-self-use
+        class FooClass(object): #pylint:disable=too-few-public-methods
+            def foo(self): # pylint: disable=no-self-use
                 return 'bar'
         methods = Methods()
-        methods.add_method(FooClass().Foo)
-        self.assertEqual('bar', _get_method(methods, 'Foo').__call__())
+        methods.add(FooClass().foo)
+        self.assertEqual('bar', methods['foo'].__call__())
 
     def test_instance_method_custom_name(self):
-        class Foo(object):
+        class Foo(object): #pylint:disable=too-few-public-methods
             def __init__(self, name):
                 self.name = name
             def get_name(self):
@@ -131,29 +132,58 @@ class TestAdd(TestCase):
         obj1 = Foo('a')
         obj2 = Foo('b')
         methods = Methods()
-        methods.add_method(obj1.get_name, 'custom1')
-        methods.add_method(obj2.get_name, 'custom2')
+        methods.add(obj1.get_name, 'custom1')
+        methods.add(obj2.get_name, 'custom2')
         # Can't use assertIs, so check the outcome is as expected
-        self.assertEqual('a', _get_method(methods, 'custom1').__call__())
-        self.assertEqual('b', _get_method(methods, 'custom2').__call__())
+        self.assertEqual('a', methods['custom1'].__call__())
+        self.assertEqual('b', methods['custom2'].__call__())
+
+
+class TestAddMethod(TestCase):
+    """add_method is the old way to add, still need to support it"""
+    def test(self):
+        def foo(): pass # pylint: disable=multiple-statements
+        methods = Methods()
+        methods.add_method(foo)
+        self.assertIs(foo, methods['foo'])
+
+
+class TestAddDictLike(TestCase):
+
+    def test_function(self):
+        methods = Methods()
+        def ping():
+            return 'pong'
+        methods['ping'] = ping
+        self.assertTrue(callable(methods['ping']))
+
+    def test_lambda(self):
+        methods = Methods()
+        methods['ping'] = lambda: 'pong'
+        self.assertTrue(callable(methods['ping']))
+
+    def test_non_callable(self):
+        methods = Methods()
+        with self.assertRaises(TypeError):
+            methods['ping'] = 1
 
 
 class TestDecorator(TestCase):
 
     def test_function(self):
         methods = Methods()
-        @methods.add_method
-        def go(): pass # pylint:disable=multiple-statements
-        self.assertIs(go, _get_method(methods, 'go'))
+        @methods.add
+        def foo(): pass # pylint:disable=multiple-statements
+        self.assertIs(foo, methods['foo'])
 
     def test_static_method(self):
         methods = Methods()
-        class FooClass(object):
+        class FooClass(object): #pylint:disable=too-few-public-methods
             @staticmethod
-            @methods.add_method
-            def Foo():
+            @methods.add
+            def foo():
                 return 'bar'
-        self.assertIs(FooClass.Foo, _get_method(methods, 'Foo'))
+        self.assertIs(FooClass.foo, methods['foo'])
 
 
 if __name__ == '__main__':

@@ -1,10 +1,6 @@
-"""
-jsonrpcserver
-*************
-"""
+"""jsonrpcserver.__init__"""
+from .methods import Methods
+from .dispatcher import dispatch
 
-import logging
-logging.getLogger('jsonrpcserver').addHandler(logging.NullHandler())
-
-from jsonrpcserver.methods import Methods
-from jsonrpcserver.dispatcher import dispatch
+# A default Methods object which can be used, or user can create their own.
+methods = Methods()

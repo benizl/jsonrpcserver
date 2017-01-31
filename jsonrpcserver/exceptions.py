@@ -1,17 +1,6 @@
-"""
-Exceptions
-**********
+"""Exceptions raised by jsonrpcserver."""
 
-These are raised to return an error to the client.
-
-Modify attributes to configure error responses, for example::
-
-    from jsonrpcserver.exceptions import InvalidParams
-    InvalidParams.message = 'Invalid arguments'
-    InvalidParams.http_status = 406
-"""
-
-from jsonrpcserver import status
+from . import status
 
 class JsonRpcServerError(Exception):
     """Base class for the other exceptions.
@@ -77,7 +66,7 @@ class InvalidParams(JsonRpcServerError):
 
 
 class ServerError(JsonRpcServerError):
-    """Raised when there's an application specific error on the server-side.
+    """Raised when there's an application-specific error on the server side.
 
     :param data: Extra information about the error that occurred (optional).
     """

@@ -1,23 +1,33 @@
+.. rubric:: `Beau Barker <https://bcb.github.io/>`__
+
 jsonrpcserver
 *************
 
 Process `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7 and 3.3+.
 
-Guides
-======
+.. code-block:: python
 
-.. toctree::
-    :maxdepth: 2
+    from jsonrpcserver import methods
 
-    quickstart
-    api
+    @methods.add
+    def ping():
+        return 'pong'
 
-Links
-=====
+    if __name__ == '__main__':
+        methods.serve_forever()
 
-- `PyPi Package <https://pypi.python.org/pypi/jsonrpcserver>`_
-- `Repository <https://github.com/bcb/jsonrpcserver>`_
-- `Issue tracker <https://github.com/bcb/jsonrpcserver/issues>`_
-- `Twitter @bbmelb <https://twitter.com/bbmelb>`_
+Start the server:
 
-See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_
+.. code-block:: sh
+
+    $ pip install jsonrpcserver
+    $ python server.py
+     * Listening on port 5000
+
+This example uses the built-in server, but you can process requests in any
+application with ``dispatch()``. See :doc:`examples in various frameworks
+<examples>`, or read the :doc:`guide to usage and configuration <api>`.
+
+Contribute on `Github <https://github.com/bcb/jsonrpcserver>`_.
+
+See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.io/>`_

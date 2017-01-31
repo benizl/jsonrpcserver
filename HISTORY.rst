@@ -1,38 +1,39 @@
-Recent Changes
-==============
+3.4.1 (Oct 4, 2016)
+~~~~~~~~~~~~~~~~~~~
+- Disable logging in config
+- Performance improved
+- Fix async batch requests
 
-3.2.2 (26 Feb 2016)
--------------------
+3.4.0 (Sep 27, 2016)
+~~~~~~~~~~~~~~~~~~~~
 
-- Added ``Request.convert_camel_case`` option.
+- Added asyncio support. (Python 3.5+)
+- Added a *methods* object to the jsonrpcserver module (so you can import
+  jsonrpcserver.methods, rather than instantiating your own).
+- Added methods.dispatch().
 
-A common problem was handling requests with *camelCase* methods and key names,
-like this::
+3.3.4 (Sep 22, 2016)
+~~~~~~~~~~~~~~~~~~~~
 
-    {
-        'jsonrpc': '2.0',
-        'method': 'getCustomer',
-        'params: {
-            'firstName': 'Beau'
-        },
-        'id': 1
-    }
+- Fix Methods.serve_forever in python 2 (thanks @bplower)
 
-These requests were awkward to handle because of the camel-case names. One had
-to convert ``firstName`` to ``first_name``, or use camel-case inside the python
-functions, which is just ugly.
+3.3.3 (Sep 15, 2016)
+~~~~~~~~~~~~~~~~~~~~
 
-An option was added to automatically convert them to underscore format, making
-handling these requests much simpler::
+- Updated method of logging exception (thanks @bplower)
 
-    from jsonrpcserver import dispatch
-    from jsonrpcserver.request import Request
-    Request.convert_camel_case = True
+3.3.2 (Aug 19, 2016)
+~~~~~~~~~~~~~~~~~~~~
 
-    def get_customer(**kwargs):
-        return 'Found {}'.format(kwargs['first_name'])
+- Pass Methods named args onto MutableMapping
+- Remove unused logger
 
-    >>> dispatch([get_customer], {'jsonrpc': '2.0', 'method': 'getCustomer', 'params: {'firstName': 'Beau'}, 'id': 1})
-    {'jsonrpc': '2.0', 'result': 'Found Beau', 'id': 1}
+3.3.1 (Aug 5, 2016)
+~~~~~~~~~~~~~~~~~~~
 
-Easy!
+- Allow passing dict to Methods constructor
+
+3.3.0 (Aug 5, 2016)
+~~~~~~~~~~~~~~~~~~~
+
+- A basic HTTP server has been added.
