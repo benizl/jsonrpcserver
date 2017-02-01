@@ -61,6 +61,10 @@ class Request(object):
     #: etc for situations where you can't change the exported function signature
     arg_norm_function = None
 
+    #: Function with signature exc = function(exc) that normalises
+    #: an exception context in an application-specific way.
+    exc_norm_function = None
+
     @staticmethod
     def _validate_against_schema(request):
         """Validate against the JSON-RPC schema.
@@ -164,6 +168,10 @@ class Request(object):
             # Log the exception if it wasn't explicitly raised by the method
             if not isinstance(exc, JsonRpcServerError):
                 log_(_LOGGER, 'error', traceback.format_exc())
+
+            # Normalise exception context if the user has requested it.
+            if self.exc_norm_function:
+                exc = self.exc_norm_function(exc)
             # Notifications should not be responded to, even for errors (unless
             # overridden in configuration)
             if self.is_notification and not config.notification_errors:

@@ -39,8 +39,15 @@ class Requests(object): #pylint:disable=too-few-public-methods
 
     @staticmethod
     def _log_response(response):
+        import copy
         """Log a response"""
-        log_(_RESPONSE_LOG, 'info', str(response), fmt='<-- %(message)s',
+        r = copy.deepcopy(response)
+
+        if 'result' in r:
+            res_str = str(r['result'])
+            if len(res_str) > 20:
+                r['result'] = "{:s}... ({:d} more chars)".format(res_str[:20], len(res_str) - 20)
+        log_(_RESPONSE_LOG, 'info', str(r), fmt='<-- %(message)s',
              extra={'http_code': response.http_status,
                     'http_reason': HTTP_STATUS_CODES[response.http_status]})
 
