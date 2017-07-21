@@ -41,7 +41,7 @@ class Requests(object): #pylint:disable=too-few-public-methods
     def _log_response(response):
         import copy
         """Log a response"""
-        r = copy.deepcopy(response)
+        r = copy.copy(response) # shallow copy of response structure that we can bastardise
 
         if 'result' in r:
             res_str = str(r['result'])
